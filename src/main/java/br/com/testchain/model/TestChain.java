@@ -13,7 +13,7 @@ public class TestChain {
     public static HashMap<String,Wallet> wallets = new HashMap<String,Wallet>();
 
 
-    public static int difficulty = 6;
+    public static int difficulty = 7;
     public static float minimumTransaction = 0.1f;
     public static Wallet walletA;
     public static Wallet walletB;
@@ -25,7 +25,6 @@ public class TestChain {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
         walletA = new Wallet("admin");
-        //walletB = new Wallet("Bob");
         Wallet coinbase = new Wallet("CoinBase");
 
         genesisTransaction = new Transaction(coinbase.publicKey, walletA.publicKey, 1000f, null);
@@ -83,7 +82,7 @@ public class TestChain {
         Block currentBlock;
         Block previousBlock;
         String hashTarget = new String(new char[difficulty]).replace('\0', '0');
-        HashMap<String,TransactionOutput> tempUTXOs = new HashMap<String,TransactionOutput>(); //a temporary working list of unspent transactions at a given block state.
+        HashMap<String,TransactionOutput> tempUTXOs = new HashMap<String,TransactionOutput>();
         tempUTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0));
 
         for(int i=1; i < blockchain.size(); i++) {

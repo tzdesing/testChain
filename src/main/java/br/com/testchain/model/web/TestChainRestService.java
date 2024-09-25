@@ -1,6 +1,5 @@
 package br.com.testchain.model.web;
 
-import br.com.testchain.model.Transaction;
 import br.com.testchain.model.dto.FundDTO;
 import br.com.testchain.model.dto.OwnerDTO;
 import br.com.testchain.model.dto.TransferDTO;
