@@ -8,6 +8,9 @@ public class TestChain {
     public static ArrayList<Block> blockchain = new ArrayList<Block>();
     public static HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 
+    public static HashMap<String,Wallet> wallets = new HashMap<String,Wallet>();
+
+
     public static int difficulty = 3;
     public static float minimumTransaction = 0.1f;
     public static Wallet walletA;
@@ -19,14 +22,14 @@ public class TestChain {
 
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
-        walletA = new Wallet();
-        walletB = new Wallet();
-        Wallet coinbase = new Wallet();
+        walletA = new Wallet("Alice");
+        walletB = new Wallet("Bob");
+        Wallet coinbase = new Wallet("CoinBase");
 
         genesisTransaction = new Transaction(coinbase.publicKey, walletA.publicKey, 100f, null);
         genesisTransaction.generateSignature(coinbase.privateKey);
         genesisTransaction.transactionId = "0";
-        genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value, genesisTransaction.transactionId)); //manually add the Transactions Output
+        genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value, genesisTransaction.transactionId));
         UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0));
 
         System.out.println("Creating and Mining Genesis block... ");

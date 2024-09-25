@@ -28,13 +28,14 @@ import static lombok.AccessLevel.PRIVATE;
 public class Wallet {
     public PrivateKey privateKey;
     public PublicKey publicKey;
+    public String owner;
     public HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 
 
 
-    public Wallet(){
+    public Wallet(String owner){
         Security.addProvider(new BouncyCastleProvider());
-        generateKeyPair();
+        generateKeyPair(owner);
     }
 
     public float getBalance() {
@@ -74,7 +75,7 @@ public class Wallet {
         return newTransaction;
     }
 
-    public void generateKeyPair() {
+    public void generateKeyPair(String owner) {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA","BC");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
@@ -83,6 +84,8 @@ public class Wallet {
             KeyPair keyPair = keyGen.generateKeyPair();
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
+            this.owner = owner;
+            TestChain.wallets.put(owner, this);
         }catch(Exception e) {
             throw new RuntimeException(e);
         }
