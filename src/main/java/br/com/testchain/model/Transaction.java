@@ -1,11 +1,13 @@
 package br.com.testchain.model;
 
 import br.com.testchain.util.StringUtil;
+import lombok.Getter;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 
+@Getter
 public class Transaction {
     public String transactionId;
     public PublicKey sender;
@@ -32,30 +34,26 @@ public class Transaction {
             return false;
         }
 
-        //gather transaction inputs (Make sure they are unspent):
         for(TransactionInput i : inputs) {
             i.UTXO = TestChain.UTXOs.get(i.transactionOutputId);
         }
 
-        //check if transaction is valid:
         if(getInputsValue() < TestChain.minimumTransaction) {
             System.out.println("#Transaction Inputs to small: " + getInputsValue());
             return false;
         }
 
-        //generate transaction outputs:
-        float leftOver = getInputsValue() - value; //get value of inputs then the left over change:
+        float leftOver = getInputsValue() - value;
         transactionId = calulateHash();
-        outputs.add(new TransactionOutput( this.reciepient, value,transactionId)); //send value to recipient
-        outputs.add(new TransactionOutput( this.sender, leftOver,transactionId)); //send the left over 'change' back to sender
+        outputs.add(new TransactionOutput( this.reciepient, value,transactionId));
+        outputs.add(new TransactionOutput( this.sender, leftOver,transactionId));
 
-        //add outputs to Unspent list
         for(TransactionOutput o : outputs) {
             TestChain.UTXOs.put(o.id , o);
         }
 
         for(TransactionInput i : inputs) {
-            if(i.UTXO == null) continue; //if Transaction can't be found skip it
+            if(i.UTXO == null) continue;
             TestChain.UTXOs.remove(i.UTXO.id);
         }
 

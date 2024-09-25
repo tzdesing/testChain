@@ -6,12 +6,14 @@ import java.util.HashMap;
 
 public class TestChain {
     public static ArrayList<Block> blockchain = new ArrayList<Block>();
+
+    public static ArrayList<Transaction> pendingTransactions = new ArrayList<Transaction>();
     public static HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 
     public static HashMap<String,Wallet> wallets = new HashMap<String,Wallet>();
 
 
-    public static int difficulty = 3;
+    public static int difficulty = 6;
     public static float minimumTransaction = 0.1f;
     public static Wallet walletA;
     public static Wallet walletB;
@@ -22,11 +24,11 @@ public class TestChain {
 
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
-        walletA = new Wallet("Alice");
-        walletB = new Wallet("Bob");
+        walletA = new Wallet("admin");
+        //walletB = new Wallet("Bob");
         Wallet coinbase = new Wallet("CoinBase");
 
-        genesisTransaction = new Transaction(coinbase.publicKey, walletA.publicKey, 100f, null);
+        genesisTransaction = new Transaction(coinbase.publicKey, walletA.publicKey, 1000f, null);
         genesisTransaction.generateSignature(coinbase.privateKey);
         genesisTransaction.transactionId = "0";
         genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value, genesisTransaction.transactionId));
@@ -37,12 +39,27 @@ public class TestChain {
         genesis.addTransaction(genesisTransaction);
         addBlock(genesis);
         Block block1 = new Block(genesis.hash);
-        System.out.println("\nWalletA's balance is: " + walletA.getBalance());
-        System.out.println("\nWalletA is Attempting to send funds (40) to WalletB...");
+        addBlock(block1);
+
+        System.out.println("\nWallet Admin balance is: " + walletA.getBalance());
+
+        isChainValid();
+
+        for(int i = 1; i < 500; i++) {
+            Block block = new Block(blockchain.get(i).hash);
+            for (Transaction trx: pendingTransactions) {
+                block.addTransaction(trx);
+                System.out.println("\nNew Transaction added with value-> " + trx.value);
+            }
+            pendingTransactions.clear();
+            addBlock(block);
+            System.out.println("\nNew Block added -> " + i );
+        }
+
+       /* System.out.println("\nWalletA is Attempting to send funds (40) to WalletB...");
         block1.addTransaction(walletA.transfer(walletB.publicKey, 40f));
         block1.addTransaction(walletA.transfer(walletB.publicKey, 5f));
         addBlock(block1);
-
 
         System.out.println("\nWalletA's balance is: " + walletA.getBalance());
         System.out.println("WalletB's balance is: " + walletB.getBalance());
@@ -58,7 +75,7 @@ public class TestChain {
         System.out.println("\nWalletB is Attempting to send funds (20) to WalletA...");
         block3.addTransaction(walletB.transfer( walletA.publicKey, 20));
         System.out.println("\nWalletA's balance is: " + walletA.getBalance());
-        System.out.println("WalletB's balance is: " + walletB.getBalance());
+        System.out.println("WalletB's balance is: " + walletB.getBalance());*/
 
         isChainValid();
     }
@@ -69,28 +86,27 @@ public class TestChain {
         HashMap<String,TransactionOutput> tempUTXOs = new HashMap<String,TransactionOutput>(); //a temporary working list of unspent transactions at a given block state.
         tempUTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0));
 
-        //loop through blockchain to check hashes:
         for(int i=1; i < blockchain.size(); i++) {
 
             currentBlock = blockchain.get(i);
             previousBlock = blockchain.get(i-1);
-            //compare registered hash and calculated hash:
+
             if(!currentBlock.hash.equals(currentBlock.calculateHash()) ){
                 System.out.println("#Current Hashes not equal");
                 return false;
             }
-            //compare previous hash and registered previous hash
+
             if(!previousBlock.hash.equals(currentBlock.previousHash) ) {
                 System.out.println("#Previous Hashes not equal");
                 return false;
             }
-            //check if hash is solved
+
             if(!currentBlock.hash.substring( 0, difficulty).equals(hashTarget)) {
                 System.out.println("#This block hasn't been mined");
                 return false;
             }
 
-            //loop thru blockchains transactions:
+
             TransactionOutput tempOutput;
             for(int t=0; t <currentBlock.transactions.size(); t++) {
                 Transaction currentTransaction = currentBlock.transactions.get(t);

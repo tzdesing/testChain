@@ -1,13 +1,9 @@
 package br.com.testchain.model;
 
 import lombok.AllArgsConstructor;
-
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.stereotype.Service;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -31,8 +27,6 @@ public class Wallet {
     public String owner;
     public HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 
-
-
     public Wallet(String owner){
         Security.addProvider(new BouncyCastleProvider());
         generateKeyPair(owner);
@@ -42,8 +36,8 @@ public class Wallet {
         float total = 0;
         for (Map.Entry<String, TransactionOutput> item: TestChain.UTXOs.entrySet()){
             TransactionOutput UTXO = item.getValue();
-            if(UTXO.isMine(publicKey)) { //if output belongs to me ( if coins belong to me )
-                UTXOs.put(UTXO.id,UTXO); //add it to our list of unspent transactions.
+            if(UTXO.isMine(publicKey)) {
+                UTXOs.put(UTXO.id,UTXO);
                 total += UTXO.value ;
             }
         }
@@ -51,11 +45,11 @@ public class Wallet {
     }
 
     public Transaction transfer(PublicKey _recipient,float value ) {
-        if(getBalance() < value) { //gather balance and check funds.
+        if(getBalance() < value) {
             System.out.println("#Not Enough funds to send transaction. Transaction Discarded.");
             return null;
         }
-        //create array list of inputs
+
         ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
         float total = 0;
@@ -72,6 +66,7 @@ public class Wallet {
         for(TransactionInput input: inputs){
             UTXOs.remove(input.transactionOutputId);
         }
+        TestChain.pendingTransactions.add(newTransaction);
         return newTransaction;
     }
 
